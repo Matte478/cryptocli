@@ -1,25 +1,17 @@
 import sys
+from cryptocli.Cryptomator import Cryptomator
 
-
-# from cryptography.fernet import Fernet
 
 def main():
     args = sys.argv[1:]
     print('count of args :: {}'.format(len(args)))
     for arg in args:
         print('passed argument :: {}'.format(arg))
-    #
-    # key = Fernet.generate_key()
-    # f = Fernet(key)
-    # token = f.encrypt(b"A really secret message. Not for prying eyes.")
-    # print(token)
 
-    print("Python version")
-    print(sys.version)
-    print(sys.version_info)
-    # decrypt = f.decrypt(token)
-    # print(decrypt)
+    cryptomator: Cryptomator = Cryptomator()
 
+    # cryptomator.encrypt_file('text.txt')
+    # cryptomator.decrypt_file('text.txt.enc', 'text.txt.key', 'text3.txt')
 
 if __name__ == '__main__':
     main()
