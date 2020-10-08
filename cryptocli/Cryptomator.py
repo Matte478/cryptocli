@@ -5,15 +5,13 @@ from Crypto.Random import get_random_bytes
 
 
 class Cryptomator:
-    def encrypt_file(self, in_filename, out_filename=None, key_file=None):
+    def encrypt_file(self, in_filename, key_file=None, out_filename=None):
         if not out_filename:
             out_filename = in_filename + '.enc'
         if not key_file:
             key_file = in_filename + '.key'
 
         key = os.urandom(16)
-
-        # iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
 
         first_part = get_random_bytes(8)
         counter = Counter.new(64, first_part)
@@ -24,7 +22,6 @@ class Cryptomator:
 
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
-
                 outfile.write(first_part)
 
                 while True:
@@ -58,7 +55,6 @@ class Cryptomator:
                 with open(out_filename, 'wb') as outfile:
                     while True:
                         chunk = infile.read(chunksize)
-
                         if len(chunk) == 0:
                             break
 
