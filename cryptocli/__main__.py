@@ -28,7 +28,6 @@ def main():
     if args.encrypt:
         cryptomator.encrypt_file(args.input, args.key, args.output)
     elif args.decrypt:
-        print(args.key)
         cryptomator.decrypt_file(args.input, args.key ,args.output)
 
 if __name__ == '__main__':
