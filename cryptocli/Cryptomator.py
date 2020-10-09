@@ -1,4 +1,5 @@
 import os
+import timeit
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Crypto.Random import get_random_bytes
@@ -22,6 +23,8 @@ class Cryptomator:
 
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
+                timer_start = timeit.default_timer()
+
                 outfile.write(first_part)
 
                 while True:
@@ -34,14 +37,15 @@ class Cryptomator:
                 with open(key_file, 'wb') as keyfile:
                     keyfile.write(key)
 
-                    print('Encrypted')
+                    time = round((timeit.default_timer() - timer_start), 4)
+
+                    print('File ' + in_filename + ' successfully encrypted (time: ' + str(time) + 's)')
 
     def decrypt_file(self, in_filename, key_filename, out_filename=None):
         if not out_filename:
             out_filename = os.path.splitext(in_filename)[0]
 
         with open(in_filename, 'rb') as infile:
-            # iv = infile.read(16)
             first_part = infile.read(8)
             counter = Counter.new(64, first_part)
 
@@ -51,7 +55,7 @@ class Cryptomator:
                 decryptor = AES.new(key, AES.MODE_CTR, counter=counter)
 
                 chunksize = 64 * 1024
-
+                timer_start = timeit.default_timer()
                 with open(out_filename, 'wb') as outfile:
                     while True:
                         chunk = infile.read(chunksize)
@@ -60,4 +64,6 @@ class Cryptomator:
 
                         outfile.write(decryptor.decrypt(chunk))
 
-                    print('Decrypted')
+                    time = round((timeit.default_timer() - timer_start), 4)
+
+                    print('File ' + in_filename + ' successfully decrypted (time: ' + str(time) + 's)')
