@@ -17,7 +17,7 @@ def main():
     mode.add_argument('-d', '--decrypt', action='store_true', help='Decrypt mode')
 
     parser.add_argument('-i', '--input', metavar='', required=True, help='Input file')
-    parser.add_argument('-o', '--output', metavar='', required=True, help='Output file', )
+    parser.add_argument('-o', '--output', metavar='', required=True, help='Output file')
     parser.add_argument('-k', '--key', metavar='', required=True, help='Key file')
 
     # Read arguments from the command line

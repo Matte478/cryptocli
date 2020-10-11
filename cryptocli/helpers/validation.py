@@ -13,11 +13,11 @@ def input_validation(filename):
     return valid
 
 
-def output_validation(filename):
+def output_validation(filename, type="Output"):
     valid = True
     if os.path.isdir(filename):
         valid = False
-        print('Output can not be directory')
+        print(type + ' can not be directory')
 
     return valid
 

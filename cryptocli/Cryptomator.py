@@ -41,7 +41,7 @@ class Cryptomator:
                     print('File ' + in_filename + ' successfully encrypted (time: ' + str(time) + 's)')
 
     def decrypt_file(self, in_filename, key_filename, out_filename):
-        if not input_validation(in_filename) or not output_validation(out_filename) :
+        if not input_validation(in_filename) or not output_validation(out_filename) or not output_validation(key_filename, "Key"):
             sys.exit()
 
         key = load_file(key_filename)
