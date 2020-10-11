@@ -6,7 +6,7 @@
 In the root directory of the CLI source code run installation bash script.
 
 ```bash
-sh install.sh
+sudo sh install.sh
 ```
 
 ## Usage
@@ -23,3 +23,6 @@ optional arguments:
   -o, --output    Output file
   -k, --key       Key file
 ```
+
+## License
+MIT © [dave.](https://davedot.dev)
