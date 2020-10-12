@@ -21,7 +21,7 @@ setup(
         'pycryptodome >= 3.9.8'
     ],
     python_requires='>=3.8',
-    packages=['cryptocli'],
+    packages=['cryptocli', 'cryptocli.helpers'],
     entry_points={
         'console_scripts': [
             'cryptocli = cryptocli.__main__:main'

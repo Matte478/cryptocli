@@ -117,7 +117,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+#dist/
 downloads/
 eggs/
 .eggs/
@@ -247,3 +247,4 @@ dmypy.json
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm
 
 .idea
+.DS_Store
