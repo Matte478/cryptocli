@@ -1,5 +1,4 @@
 import sys
-import os
 import timeit
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
@@ -13,12 +12,12 @@ class Cryptomator:
         if not input_validation(in_filename) or not output_validation(out_filename):
             sys.exit()
 
-        key = os.urandom(16)
+        key = get_random_bytes(16)
 
         first_part = get_random_bytes(8)
         counter = Counter.new(64, first_part)
 
-        encryptor = AES.new(key, AES.MODE_CTR, counter=counter)
+        cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
@@ -31,7 +30,7 @@ class Cryptomator:
                     chunk = infile.read(chunksize)
                     if len(chunk) == 0:
                         break
-                    outfile.write(encryptor.encrypt(chunk))
+                    outfile.write(cipher.encrypt(chunk))
 
                 with open(key_filename, 'wb') as keyfile:
                     keyfile.write(key)
@@ -52,7 +51,7 @@ class Cryptomator:
             first_part = infile.read(8)
             counter = Counter.new(64, first_part)
 
-            decryptor = AES.new(key, AES.MODE_CTR, counter=counter)
+            cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
             chunksize = 64 * 1024
             timer_start = timeit.default_timer()
@@ -61,7 +60,7 @@ class Cryptomator:
                     chunk = infile.read(chunksize)
                     if len(chunk) == 0:
                         break
-                    outfile.write(decryptor.decrypt(chunk))
+                    outfile.write(cipher.decrypt(chunk))
 
                 time = round((timeit.default_timer() - timer_start), 4)
 
