@@ -8,6 +8,8 @@ from cryptocli.helpers.validation import *
 
 
 class HybridCryptomator:
+    CHUNK_SIZE = 64 * 1024
+
     def __init__(self):
         pass
 
@@ -24,31 +26,51 @@ class HybridCryptomator:
 
         print('Private and public key successfully generated')
 
+
+    def encrypt_symmetric_key(self, symmetric_key, public_key):
+        cipher_rsa = PKCS1_OAEP.new(RSA.import_key(public_key))
+        symmetric_key_enc = cipher_rsa.encrypt(symmetric_key)
+
+        return symmetric_key_enc
+
+
+    def decrypt_symmetric_key(self, symmetric_key_enc, private_key):
+        cipher_rsa = PKCS1_OAEP.new(RSA.import_key(private_key))
+        symmetric_key = cipher_rsa.decrypt(symmetric_key_enc)
+
+        return symmetric_key
+
+
+    def get_tag_from_file(self, infile):
+        infile.seek(-16, os.SEEK_END)
+        tag = infile.read()
+        infile.seek(-16, os.SEEK_END)
+        infile.truncate()
+
+        return tag
+
     # output file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
-    def encrypt_file(self, filename_public_key, in_filename, out_filename):
+    def encrypt_file(self, in_filename, out_filename, filename_public_key):
         # TODO validation
 
-        symmetric_key = get_random_bytes(16)
-        nonce = get_random_bytes(12)
+        public_key = load_file(filename_public_key)
 
-        with open(filename_public_key, 'rb') as pk:
-            # Encrypt the session key with the public RSA key
-            cipher_rsa = PKCS1_OAEP.new(RSA.import_key(pk.read()))
-            enc_symmetric_key = cipher_rsa.encrypt(symmetric_key)
+        nonce = get_random_bytes(12)
+        symmetric_key = get_random_bytes(16)
+        symmetric_key_enc = self.encrypt_symmetric_key(symmetric_key, public_key)
+        header = nonce + symmetric_key_enc
 
         cipher = AES.new(symmetric_key, AES.MODE_GCM, nonce=nonce)
 
+        timer_start = timeit.default_timer()
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
-                chunksize = 64 * 1024
-                # timer_start = timeit.default_timer()
 
-                header = nonce + enc_symmetric_key
                 cipher.update(header)
                 outfile.write(header)
 
                 while True:
-                    chunk = infile.read(chunksize)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.encrypt(chunk))
@@ -56,48 +78,44 @@ class HybridCryptomator:
                 # write TAG
                 outfile.write(cipher.digest())
 
-                # time = round((timeit.default_timer() - timer_start), 4)
-                time = -1
+                time = round((timeit.default_timer() - timer_start), 4)
+
                 print('File ' + in_filename + ' successfully encrypted (time: ' + str(time) + 's)')
 
     # input file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
-    def decrypt_file(self, filename_private_key, in_filename, out_filename):
+    def decrypt_file(self, in_filename, out_filename, filename_private_key):
         # TODO validation
 
+        timer_start = timeit.default_timer()
         with open(in_filename, 'rb+') as infile:
             nonce = infile.read(12)
-            enc_symmetric_key = infile.read(256)
-            header = nonce + enc_symmetric_key
+            symmetric_key_enc = infile.read(256)
+            header = nonce + symmetric_key_enc
 
-            with open(filename_private_key, 'rb') as pk:
-                cipher_rsa = PKCS1_OAEP.new(RSA.import_key(pk.read()))
+            private_key = load_file(filename_private_key)
 
-            symmetric_key = cipher_rsa.decrypt(enc_symmetric_key)
+            symmetric_key = self.decrypt_symmetric_key(symmetric_key_enc, private_key)
 
             cipher = AES.new(symmetric_key, AES.MODE_GCM, nonce=nonce)
             cipher.update(header)
 
-            infile.seek(-16, os.SEEK_END)
-            tag = infile.read()
-            infile.seek(-16, os.SEEK_END)
-            infile.truncate()
+            tag = self.get_tag_from_file(infile)
             infile.seek(12 + 256)
 
-            chunksize = 64 * 1024
-            # timer_start = timeit.default_timer()
             with open(out_filename, 'wb') as outfile:
                 while True:
-                    chunk = infile.read(chunksize)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.decrypt(chunk))
 
+                infile.write(tag)
+
             try:
-                print(len(tag))
                 cipher.verify(tag)
             except ValueError as e:
                 print(e)
 
-            # time = round((timeit.default_timer() - timer_start), 4)
-            time = -1
+            time = round((timeit.default_timer() - timer_start), 4)
+
             print('File ' + in_filename + ' successfully decrypted (time: ' + str(time) + 's)')

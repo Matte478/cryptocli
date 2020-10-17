@@ -1,39 +1,38 @@
-import argparse
+import sys
 from cryptocli.Cryptomator import Cryptomator
 from cryptocli.HybridCryptomator import HybridCryptomator
+from cryptocli.helpers.arg_parser import get_arg_parser
 
 def main():
-    # # Define the program description
-    # description = 'A simple commandline app for encrypt / decrypt files in Python 3.'
-    #
-    # # Initiate the parser
-    # parser = argparse.ArgumentParser(description=description)
-    #
-    # # Arguments
-    # parser.add_argument('-v', '--version', help='Display this application version', action='version', version='%(prog)s (version 0.1.0)')
-    #
-    # mode = parser.add_mutually_exclusive_group(required=True)
-    # mode.add_argument('-e', '--encrypt', action='store_true', help='Encrypt mode')
-    # mode.add_argument('-d', '--decrypt', action='store_true', help='Decrypt mode')
-    #
-    # parser.add_argument('-i', '--input', metavar='', required=True, help='Input file')
-    # parser.add_argument('-o', '--output', metavar='', required=True, help='Output file')
-    # parser.add_argument('-k', '--key', metavar='', required=True, help='Key file')
-    #
-    # # Read arguments from the command line
-    # args = parser.parse_args()
-    #
-    # cryptomator: Cryptomator = Cryptomator()
-    #
-    # if args.encrypt:
-    #     cryptomator.encrypt_file(args.input, args.key, args.output)
-    # elif args.decrypt:
-    #     cryptomator.decrypt_file(args.input, args.key ,args.output)
+    parser = get_arg_parser()
 
-    cryptomator: HybridCryptomator = HybridCryptomator()
-    # cryptomator.generate_key_pair('private_key', 'public_key')
-    # cryptomator.encrypt_file('public_key2', 'test.txt', 'test.txt.enc')
-    cryptomator.decrypt_file('private_key2', 'test.txt.enc', 'test2.txt')
+    # Read arguments from the command line
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.parse_args(['--help'])
+        sys.exit(0)
+
+    elif args.command == 'symmetric-mode':
+        cryptomator: Cryptomator = Cryptomator()
+
+        if args.encrypt:
+            cryptomator.encrypt_file(args.input, args.key, args.output)
+        elif args.decrypt:
+            cryptomator.decrypt_file(args.input, args.key, args.output)
+
+    elif args.command == 'hybrid-mode':
+        cryptomator: HybridCryptomator = HybridCryptomator()
+
+        if args.encrypt:
+            cryptomator.encrypt_file(args.input, args.output, args.key)
+        elif args.decrypt:
+            cryptomator.decrypt_file(args.input, args.output, args.key)
+
+    if args.command == 'generate-key':
+        print('generate key pair')
+        print(args)
+
 
 if __name__ == '__main__':
     main()
