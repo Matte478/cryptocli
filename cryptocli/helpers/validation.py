@@ -1,26 +1,34 @@
 import os.path
 
 
-def input_validation(filename):
+def input_validation(filename, type='Input'):
     valid = True
     if not os.path.exists(filename):
         valid = False
-        print('Input file does not exists')
+        print(f'{type} file does not exists')
     elif os.path.isdir(filename):
         valid = False
-        print('Input can not be directory')
+        print(f'{type} can not be directory')
 
     return valid
 
 
-def output_validation(filename, type="Output"):
+def output_validation(filename, type='Output'):
     valid = True
     if os.path.isdir(filename):
         valid = False
-        print(type + ' can not be directory')
+        print(f'{type} can not be directory')
 
     return valid
 
+
+def dir_validation(path):
+    valid = os.path.isdir(path)
+
+    if not valid:
+        print(f'{path} must be directory')
+
+    return valid
 
 def key_validation(key=None):
     valid = True

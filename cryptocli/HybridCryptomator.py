@@ -14,7 +14,8 @@ class HybridCryptomator:
         pass
 
     def generate_key_pair(self, path, private_key_filename="key.priv", public_key_filename="key.pub"):
-        # TODO validation
+        if not dir_validation(path):
+            sys.exit()
 
         path = path + '/' if path[-1] != '/' else path
 
@@ -37,7 +38,12 @@ class HybridCryptomator:
 
     def decrypt_symmetric_key(self, symmetric_key_enc, private_key):
         cipher_rsa = PKCS1_OAEP.new(RSA.import_key(private_key))
-        symmetric_key = cipher_rsa.decrypt(symmetric_key_enc)
+
+        try:
+            symmetric_key = cipher_rsa.decrypt(symmetric_key_enc)
+        except (ValueError, TypeError) as e:
+            print(e)
+            sys.exit()
 
         return symmetric_key
 
@@ -50,9 +56,10 @@ class HybridCryptomator:
 
         return tag
 
-    # output file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
+    # output file format: [ nonce (12) | symmetric_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
     def encrypt_file(self, in_filename, out_filename, public_key_filename):
-        # TODO validation
+        if not input_validation(in_filename) or not output_validation(out_filename) or not input_validation(public_key_filename, type='Public key'):
+            sys.exit()
 
         public_key = load_file(public_key_filename)
 
@@ -83,17 +90,18 @@ class HybridCryptomator:
 
                 print(f'File {in_filename} successfully encrypted (time: {str(time)}s)')
 
-    # input file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
+    # input file format: [ nonce (12) | symmetric_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
     def decrypt_file(self, in_filename, out_filename, private_key_filename):
-        # TODO validation
+        if not input_validation(in_filename) or not output_validation(out_filename) or not input_validation(private_key_filename, type='Private key'):
+            sys.exit()
+
+        private_key = load_file(private_key_filename)
 
         timer_start = timeit.default_timer()
         with open(in_filename, 'rb+') as infile:
             nonce = infile.read(12)
             symmetric_key_enc = infile.read(256)
             header = nonce + symmetric_key_enc
-
-            private_key = load_file(private_key_filename)
 
             symmetric_key = self.decrypt_symmetric_key(symmetric_key_enc, private_key)
 
@@ -114,8 +122,9 @@ class HybridCryptomator:
 
             try:
                 cipher.verify(tag)
-            except ValueError as e:
-                print(e)
+            except ValueError:
+                print('Integrity validation failed')
+                sys.exit()
 
             time = round((timeit.default_timer() - timer_start), 4)
 

@@ -19,8 +19,8 @@ class SymmetricCryptomator:
 
         key = get_random_bytes(16)
 
-        first_part = get_random_bytes(8)
-        counter = Counter.new(64, first_part)
+        nonce = get_random_bytes(8)
+        counter = Counter.new(64, nonce)
 
         cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
@@ -28,7 +28,7 @@ class SymmetricCryptomator:
             with open(out_filename, 'wb') as outfile:
                 timer_start = timeit.default_timer()
 
-                outfile.write(first_part)
+                outfile.write(nonce)
 
                 while True:
                     chunk = infile.read(self.CHUNK_SIZE)
@@ -52,8 +52,8 @@ class SymmetricCryptomator:
             sys.exit()
 
         with open(in_filename, 'rb') as infile:
-            first_part = infile.read(8)
-            counter = Counter.new(64, first_part)
+            nonce = infile.read(8)
+            counter = Counter.new(64, nonce)
 
             cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
