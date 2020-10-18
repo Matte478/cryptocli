@@ -44,7 +44,7 @@ def get_arg_parser():
         required=True,
     )
 
-    # Command: symmetric mode
+    # Command: hybrid mode
     parser_hybrid_mode = subparsers.add_parser(
         'hybrid-mode',
         help='hybrid mode for encryption / decryption',
@@ -77,11 +77,11 @@ def get_arg_parser():
     )
 
     # Command: generate key
-    parser_generate_key_mode = subparsers.add_parser(
+    parser_generate_key = subparsers.add_parser(
         'generate-key',
         help='generate key pair (public and private) for hybrid mode',
     )
-    parser_generate_key_mode.add_argument(
+    parser_generate_key.add_argument(
         '-p', '--path',
         help='Path where the key pair will be stored',
         required=True,

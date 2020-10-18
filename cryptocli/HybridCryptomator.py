@@ -13,19 +13,20 @@ class HybridCryptomator:
     def __init__(self):
         pass
 
-    def generate_key_pair(self, filename_private_key, filename_public_key):
+    def generate_key_pair(self, path, private_key_filename="key.priv", public_key_filename="key.pub"):
         # TODO validation
+
+        path = path + '/' if path[-1] != '/' else path
 
         key = RSA.generate(2048)
 
-        with open(filename_private_key, 'wb') as private_key:
+        with open(path + private_key_filename, 'wb') as private_key:
             private_key.write(key.export_key('PEM'))
 
-        with open(filename_public_key, 'wb') as public_key:
+        with open(path + public_key_filename, 'wb') as public_key:
             public_key.write(key.publickey().export_key('PEM'))
 
-        print('Private and public key successfully generated')
-
+        print(f'Private and public key successfully generated in {path}')
 
     def encrypt_symmetric_key(self, symmetric_key, public_key):
         cipher_rsa = PKCS1_OAEP.new(RSA.import_key(public_key))
@@ -50,10 +51,10 @@ class HybridCryptomator:
         return tag
 
     # output file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
-    def encrypt_file(self, in_filename, out_filename, filename_public_key):
+    def encrypt_file(self, in_filename, out_filename, public_key_filename):
         # TODO validation
 
-        public_key = load_file(filename_public_key)
+        public_key = load_file(public_key_filename)
 
         nonce = get_random_bytes(12)
         symmetric_key = get_random_bytes(16)
@@ -80,10 +81,10 @@ class HybridCryptomator:
 
                 time = round((timeit.default_timer() - timer_start), 4)
 
-                print('File ' + in_filename + ' successfully encrypted (time: ' + str(time) + 's)')
+                print(f'File {in_filename} successfully encrypted (time: {str(time)}s)')
 
     # input file format: [ nonce (12) | enc_symmetric_key (256) | encrypted_data (len(data)) | tag (16) ]
-    def decrypt_file(self, in_filename, out_filename, filename_private_key):
+    def decrypt_file(self, in_filename, out_filename, private_key_filename):
         # TODO validation
 
         timer_start = timeit.default_timer()
@@ -92,7 +93,7 @@ class HybridCryptomator:
             symmetric_key_enc = infile.read(256)
             header = nonce + symmetric_key_enc
 
-            private_key = load_file(filename_private_key)
+            private_key = load_file(private_key_filename)
 
             symmetric_key = self.decrypt_symmetric_key(symmetric_key_enc, private_key)
 
@@ -118,4 +119,4 @@ class HybridCryptomator:
 
             time = round((timeit.default_timer() - timer_start), 4)
 
-            print('File ' + in_filename + ' successfully decrypted (time: ' + str(time) + 's)')
+            print(f'File {in_filename} successfully decrypted (time: {str(time)}s)')

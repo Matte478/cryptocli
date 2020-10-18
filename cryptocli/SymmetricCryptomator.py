@@ -7,8 +7,13 @@ from cryptocli.helpers.load_file import load_file
 from cryptocli.helpers.validation import *
 
 
-class Cryptomator:
-    def encrypt_file(self, in_filename, key_filename, out_filename):
+class SymmetricCryptomator:
+    CHUNK_SIZE = 64 * 1024
+
+    def __init__(self):
+        pass
+
+    def encrypt_file(self, in_filename, out_filename, key_filename):
         if not input_validation(in_filename) or not output_validation(out_filename):
             sys.exit()
 
@@ -21,13 +26,12 @@ class Cryptomator:
 
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
-                chunksize = 64 * 1024
                 timer_start = timeit.default_timer()
 
                 outfile.write(first_part)
 
                 while True:
-                    chunk = infile.read(chunksize)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.encrypt(chunk))
@@ -37,9 +41,9 @@ class Cryptomator:
 
                     time = round((timeit.default_timer() - timer_start), 4)
 
-                    print('File ' + in_filename + ' successfully encrypted (time: ' + str(time) + 's)')
+                    print(f'File {in_filename} successfully encrypted (time: {str(time)}s)')
 
-    def decrypt_file(self, in_filename, key_filename, out_filename):
+    def decrypt_file(self, in_filename, out_filename, key_filename):
         if not input_validation(in_filename) or not output_validation(out_filename) or not output_validation(key_filename, "Key"):
             sys.exit()
 
@@ -53,15 +57,14 @@ class Cryptomator:
 
             cipher = AES.new(key, AES.MODE_CTR, counter=counter)
 
-            chunksize = 64 * 1024
             timer_start = timeit.default_timer()
             with open(out_filename, 'wb') as outfile:
                 while True:
-                    chunk = infile.read(chunksize)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.decrypt(chunk))
 
                 time = round((timeit.default_timer() - timer_start), 4)
 
-                print('File ' + in_filename + ' successfully decrypted (time: ' + str(time) + 's)')
+                print(f'File {in_filename} successfully decrypted (time: {str(time)}s)')
