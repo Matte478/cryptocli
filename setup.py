@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='cryptocli',
-    version='0.1.0',
+    version='0.2.0',
     author='dave.',
     author_email='hello@davedot.dev',
     description='A simple commandline app for encrypt / decrypt files in Python 3.',
