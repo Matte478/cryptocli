@@ -11,7 +11,7 @@ def get_arg_parser():
         '-v', '--version',
         help='Display this application version',
         action='version',
-        version='%(prog)s (version 0.1.0)'
+        version='%(prog)s (version 0.2.0)'
     )
 
     subparsers = parser.add_subparsers(dest='command')
