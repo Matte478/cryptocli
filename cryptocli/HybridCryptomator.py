@@ -13,6 +13,7 @@ class HybridCryptomator:
     def __init__(self):
         pass
 
+
     def generate_key_pair(self, path, private_key_filename="key.priv", public_key_filename="key.pub"):
         if not dir_validation(path):
             sys.exit()
@@ -29,17 +30,26 @@ class HybridCryptomator:
 
         print(f'Private and public key successfully generated in {path}')
 
+
     def encrypt_symmetric_key(self, symmetric_key, public_key):
-        cipher_rsa = PKCS1_OAEP.new(RSA.import_key(public_key))
-        symmetric_key_enc = cipher_rsa.encrypt(symmetric_key)
+        try:
+            rsa_public_key = RSA.import_key(public_key)
+
+            if rsa_public_key.has_private():
+                raise Exception('Private key provided instead of public key')
+
+            cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
+            symmetric_key_enc = cipher_rsa.encrypt(symmetric_key)
+        except (ValueError, IndexError, TypeError, Exception) as e:
+            print(e)
+            sys.exit()
 
         return symmetric_key_enc
 
 
     def decrypt_symmetric_key(self, symmetric_key_enc, private_key):
-        cipher_rsa = PKCS1_OAEP.new(RSA.import_key(private_key))
-
         try:
+            cipher_rsa = PKCS1_OAEP.new(RSA.import_key(private_key))
             symmetric_key = cipher_rsa.decrypt(symmetric_key_enc)
         except (ValueError, TypeError) as e:
             print(e)
